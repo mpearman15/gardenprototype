@@ -58,18 +58,17 @@ onSnapshot(
     console.error(error);
   }
 );
-  window.setup = () => {
-    createCanvas(windowWidth, windowHeight);
-    background('white');
-  };
 
-  window.draw = () => {
-    fill(random(255), random(255), random(255));
-    ellipse(random(400), random(400), random(50, 150));
-    noLoop();
-  }
+// window.setup = () => {
+//   createCanvas(windowWidth, windowHeight);
+//   background('white');
+// };
 
-
+// window.draw = () => {
+//   fill(random(255), random(255), random(255));
+//   ellipse(random(400), random(400), random(50, 150));
+//   noLoop();
+// }
 
 async function addEntry(data) {
   console.log("adding entry to database");
@@ -78,18 +77,19 @@ async function addEntry(data) {
       data: data
     });
 
-    // const sketch = (p) => {
-    //   p.setup = () => {
-    //     p.createCanvas(windowWidth, windowHeight);
-    //     p.background('white');
-    //   };
-    //   p.draw = () => {
-    //     p.fill(p.random(255), p.random(255), p.random(255));
-    //     p.ellipse(p.random(400), p.random(400), p.random(50, 150));
-    //     noLoop();
-    //   };
-    // };
-    // new p5(sketch);
+    const sketch = (p) => {
+      p.setup = () => {
+        p.createCanvas(600, 600);
+        p.background('white');
+      };
+      p.draw = () => {
+        p.fill(p.random(255), p.random(255), p.random(255));
+        p.noStroke();
+        p.ellipse(p.random(400), p.random(400), p.random(50, 150));
+        noLoop();
+      };
+    };
+    new p5(sketch);
 
 
     render(view(), document.body);
