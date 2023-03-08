@@ -34,7 +34,6 @@ let entries = [];
 const entryRef = collection(db, "entries");
 
 async function getAllEntries() {
-  entries = [];
   const queryShapshot = await getDocs(
     query(entryRef, orderBy("time", "desc"))
   );
@@ -44,6 +43,7 @@ async function getAllEntries() {
   });
   console.log(entries);
   render(view(), document.body);
+  return entries;
 }
 
 getAllEntries();
@@ -76,17 +76,33 @@ async function addEntry(data) {
     const docRef = await addDoc(collection(db, "entries"), {
       data: data
     });
-
+    // testing out sketching
+    let mouseClicked = false;
     const sketch = (p) => {
+
       p.setup = () => {
-        p.createCanvas(600, 600);
+        p.createCanvas(p.windowWidth, p.windowHeight);
         p.background('white');
       };
+
       p.draw = () => {
-        p.fill(p.random(255), p.random(255), p.random(255));
-        p.noStroke();
-        p.ellipse(p.random(400), p.random(400), p.random(50, 150));
-        noLoop();
+        if (mouseClicked) {
+          p.fill(p.random(255), p.random(255), p.random(255));
+          p.noStroke();
+          let locX = p.mouseX;
+          let locY = p.mouseY;
+          let size = p.random(50,150);
+          p.ellipse(locX, locY, size);
+          p.fill(0);
+          p.text("activity: " + data.activity, locX-(size/2)+20, locY);
+          p.text("mood: " + data.mood, locX-(size/2)+20, locY+10);
+          p.text("note: " + data.note, locX-(size/2)+20, locY+20);
+          mouseClicked = false;
+        }
+      };
+
+      p.mousePressed = () => {
+        mouseClicked = true;
       };
     };
     new p5(sketch);
@@ -116,10 +132,10 @@ function popup() {
       <div class="popup-container">
         <form @submit=${handleSubmit}>
           <p>Type of activity</p>
-          <input type="radio" id="active" name="activity" value="active">
-          <label for="active">active</label><br>
-          <input type="radio" id="chill" name="activity" value="chill">
-          <label for="chill">chill</label><br>
+          <input type="radio" id="work" name="activity" value="work">
+          <label for="work">work</label><br>
+          <input type="radio" id="leisure" name="activity" value="leisure">
+          <label for="leisure">leisure</label><br>
           <input type="radio" id="school" name="activity" value="school">
           <label for="school">school</label><br>
 
@@ -147,7 +163,9 @@ function logEntry() {
 
 function view() {
   return html`
-    <h1>journal</h1>
+    <h1>garden journal</h1>
+    <p> welcome! add in your entry, and then use your click on whatever spot on
+    the screen to plant that entry :) </p>
     <button class="button" @click=${logEntry}> Log Entry! </button>
     ${entries.map((entry) => html`
       <p>${entry.activity} </p>
