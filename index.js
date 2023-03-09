@@ -33,37 +33,67 @@ const db = getFirestore(app);
 let entries = [];
 const entryRef = collection(db, "entries");
 
-async function getAllEntries() {
+let canvas;
+window.setup = () => {
+  canvas = createCanvas(windowWidth, windowHeight);
+}
+let isMouseOverCanvas = false;
+async function drawAllEntries() {
+
   entries = [];
 
   const querySnapshot = await getDocs(
     query(entryRef, orderBy("time", "desc"))
   );
 
-  new p5((p) => {
-    p.setup = () => {
-      const canvas = p.createCanvas(p.windowWidth, p.windowHeight);
-      canvas.parent("sketch-container");
-    };
+  if (!canvas) {
+    canvas = createCanvas(windowWidth, windowHeight);
+    const container = document.getElementById("canvas-container");
+    canvas.parent(container);
+  }
+  background(255);
 
-    p.draw = () => {
-      p.clear();
-      querySnapshot.forEach((doc) => {
-        let entryData = doc.data();
-        p.fill(p.random(255), p.random(255), p.random(255));
-        p.noStroke();
-        let locX = p.random(p.random(p.windowWidth));
-        let locY = p.random(p.random(p.windowHeight));
-        let size = p.random(50,150);
-        p.ellipse(locX, locY, size);
-        p.fill(0);
-        p.text("activity: " + entryData.activity, locX-(size/2)+20, locY);
-        p.text("mood: " + entryData.mood, locX-(size/2)+20, locY+10);
-        p.text("note: " + entryData.note, locX-(size/2)+20, locY+20);
-      });
-      p.noLoop();
-    };
+  querySnapshot.forEach((doc) => {
+    let entryData = doc.data();
+    fill(random(255), random(255), random(255));
+    noStroke();
+    let locX = random(random(windowWidth));
+    let locY = random(random(windowHeight));
+    let size = random(50,150);
+    ellipse(locX, locY, size);
+    // if (mouseOver(locX, locY, size)) {
+      fill(0);
+      text("activity: " + entryData.activity, locX-(size/2)+20, locY);
+      text("mood: " + entryData.mood, locX-(size/2)+20, locY+10);
+      text("note: " + entryData.note, locX-(size/2)+20, locY+20);
+    // }
+
   });
+  noLoop();
+  // new p5((p) => {
+  //   p.setup = () => {
+  //     const canvas = p.createCanvas(p.windowWidth, p.windowHeight);
+  //     canvas.parent("sketch-container");
+  //   };
+
+  //   p.draw = () => {
+  //     p.clear();
+  //     querySnapshot.forEach((doc) => {
+  //       let entryData = doc.data();
+  //       p.fill(p.random(255), p.random(255), p.random(255));
+  //       p.noStroke();
+  //       let locX = p.random(p.random(p.windowWidth));
+  //       let locY = p.random(p.random(p.windowHeight));
+  //       let size = p.random(50,150);
+  //       p.ellipse(locX, locY, size);
+  //       p.fill(0);
+  //       p.text("activity: " + entryData.activity, locX-(size/2)+20, locY);
+  //       p.text("mood: " + entryData.mood, locX-(size/2)+20, locY+10);
+  //       p.text("note: " + entryData.note, locX-(size/2)+20, locY+20);
+  //     });
+  //     p.noLoop();
+  //   };
+  // });
 
   // querySnapshot.forEach((doc) => {
   //   let entryData = doc.data();
@@ -74,23 +104,38 @@ async function getAllEntries() {
   render(view(), document.body);
 }
 
-getAllEntries();
+function mouseOver(x, y, size) {
+  return dist(x, y, mouseX, mouseY) < size/2;
+}
 
-onSnapshot(
-  collection(db, "entries"),
-  (snapshot) => {
-    console.log("snap", snapshot);
-    getAllEntries();
-  },
-  (error) => {
-    console.error(error);
-  }
-);
+drawAllEntries();
+
+// onSnapshot(
+//   collection(db, "entries"),
+//   (snapshot) => {
+//     console.log("snap", snapshot);
+//     getAllEntries();
+//   },
+//   (error) => {
+//     console.error(error);
+//   }
+// );
 
 async function addEntry(data) {
   console.log("adding entry to database");
   try {
     const docRef = await addDoc(collection(db, "entries"), data);
+
+    fill(random(255), random(255), random(255));
+    noStroke();
+    let locX = random(random(windowWidth));
+    let locY = random(random(windowHeight));
+    let size = random(50, 150);
+    ellipse(locX, locY, size);
+    fill(0);
+    text("activity: " + data.activity, locX - (size / 2) + 20, locY);
+    text("mood: " + data.mood, locX - (size / 2) + 20, locY + 10);
+    text("note: " + data.note, locX - (size / 2) + 20, locY + 20);
 
     // // testing out sketching
     // // printing out whatever was just written in
@@ -124,18 +169,12 @@ async function addEntry(data) {
     // };
     // new p5(sketch);
 
+
+    await drawAllEntries();
     render(view(), document.body);
   } catch (e) {
     console.error("Error adding document: ", e);
   }
-}
-
-function createFlower(activity, mood, note) {
-  return html`
-  <p>${activity}</p>
-  <p>${mood}</p>
-  <p>${note}</p>
-  `;
 }
 
 function popup() {
@@ -188,10 +227,9 @@ function logEntry() {
 function view() {
   return html`
     <h1>garden journal</h1>
-    <p> welcome! add in your entry, and then use your click on whatever spot on
-    the screen to plant that entry :) </p>
+    <p> welcome! add in your entry :) </p>
     <button class="button" @click=${logEntry}> Log Entry! </button>
-    <div id=sketch-container> </div>
+    <div id=canvas-container> </div>
   `;
 }
 
