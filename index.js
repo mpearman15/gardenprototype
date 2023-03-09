@@ -62,9 +62,8 @@ onSnapshot(
 async function addEntry(data) {
   console.log("adding entry to database");
   try {
-    const docRef = await addDoc(collection(db, "entries"), {
-      data: data
-    });
+    const docRef = await addDoc(collection(db, "entries"),
+      data );
 
     // testing out sketching
     // printing out whatever was just written in
@@ -166,7 +165,7 @@ function view() {
     <p> welcome! add in your entry, and then use your click on whatever spot on
     the screen to plant that entry :) </p>
     <button class="button" @click=${logEntry}> Log Entry! </button>
-    ${entries.map((entry) => html`${entry.activity}`)}
+    ${entries.map((entry) => html`<p> ${entry.activity} </p>`)}
   `;
 }
 
