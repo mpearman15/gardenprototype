@@ -34,16 +34,16 @@ let entries = [];
 const entryRef = collection(db, "entries");
 
 async function getAllEntries() {
-  const queryShapshot = await getDocs(
+  entries = [];
+  const querySnapshot = await getDocs(
     query(entryRef, orderBy("time", "desc"))
   );
-  queryShapshot.forEach((doc) => {
+  querySnapshot.forEach((doc) => {
     let entryData = doc.data();
     entries.push(entryData);
   });
-  console.log(entries);
+  // console.log(entries);
   render(view(), document.body);
-  return entries;
 }
 
 getAllEntries();
@@ -59,24 +59,15 @@ onSnapshot(
   }
 );
 
-// window.setup = () => {
-//   createCanvas(windowWidth, windowHeight);
-//   background('white');
-// };
-
-// window.draw = () => {
-//   fill(random(255), random(255), random(255));
-//   ellipse(random(400), random(400), random(50, 150));
-//   noLoop();
-// }
-
 async function addEntry(data) {
   console.log("adding entry to database");
   try {
     const docRef = await addDoc(collection(db, "entries"), {
       data: data
     });
+
     // testing out sketching
+    // printing out whatever was just written in
     let mouseClicked = false;
     const sketch = (p) => {
 
@@ -112,6 +103,14 @@ async function addEntry(data) {
   } catch (e) {
     console.error("Error adding document: ", e);
   }
+}
+
+function createFlower(activity, mood, note) {
+  return html`
+  <p>${activity}</p>
+  <p>${mood}</p>
+  <p>${note}</p>
+  `;
 }
 
 function popup() {
@@ -167,9 +166,7 @@ function view() {
     <p> welcome! add in your entry, and then use your click on whatever spot on
     the screen to plant that entry :) </p>
     <button class="button" @click=${logEntry}> Log Entry! </button>
-    ${entries.map((entry) => html`
-      <p>${entry.activity} </p>
-    `)}
+    ${entries.map((entry) => html`${entry.activity}`)}
   `;
 }
 
